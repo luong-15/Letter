@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 Lời Tỏ Tình Đặc Biệt 💕</title>
+    <link rel="icon" 
+          type="image/svg+xml" 
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23ff6b9d' d='M241 87.1l15 20.7 15-20.7C296 52.5 336.2 32 378.9 32 452.4 32 512 91.6 512 165.1l0 2.6c0 112.2-139.9 242.5-212.9 298.2-12.4 9.4-27.6 14.1-43.1 14.1s-30.8-4.6-43.1-14.1C139.9 410.2 0 279.9 0 167.7l0-2.6C0 91.6 59.6 32 133.1 32 175.8 32 216 52.5 241 87.1z'%3E%3C/path%3E%3C/svg%3E">
+    <meta name="description" content="Một lời tỏ tình đặc biệt dành cho người em yêu">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Open+Sans:wght@400;600&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="video-background">
+        <video autoplay muted loop playsinline id="myVideo">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-pink-and-purple-ink-in-water-2565-large.mp4" type="video/mp4">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-pink-and-purple-ink-in-water-2565-large.webm" type="video/webm">
+            Trình duyệt của bạn không hỗ trợ video.
+        </video>
+    </div>
+
+    <div class="content">
+        <div id="initialScreen">
+            <!-- <img id="initialAvatar" src="https://placehold.co/120x120/ff6b9d/ffffff?text=💕" alt="Love Avatar"> -->
+            <h1>✨ Có một điều quan trọng anh muốn nói với em... ✨</h1>
+            <button id="revealLetterBtn">💌 Bấm vào đây để biết! 💌</button>
+        </div>
+
+        <div id="letterContainer" class="hidden">
+            <img id="letterAvatar" src="https://scontent.fhan5-8.fna.fbcdn.net/v/t39.30808-6/494927797_122160618446550377_2393610660016340207_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeHWdQIENSr38QZbVH-Gr9hhmSgywycBEyWZKDLDJwETJSzZkKw6U5SldIJ6Wr6D0GH-hgfeO7nmXSf3Kj6HIxIZ&_nc_ohc=ftlAv8KfNOEQ7kNvwHbdcUz&_nc_oc=AdkMcOXrRiN0Od7cPCwPMEP9z4Fq-ZbhYoL-PQhgtAwS0anzorn-v9ndG61vrlwmvVw&_nc_zt=23&_nc_ht=scontent.fhan5-8.fna&_nc_gid=s8NsjBd82Xy6kT6Zu-WT6w&oh=00_AfScrI6QM-dIQL3NUt5uUTovTEkoQQ5UxwayNlW9acNTLA&oe=688BE91D" alt="Letter Avatar">
+            <p id="loveLetterText"></p>
+        </div>
+
+        <div id="proposalContainer" class="hidden">
+            <h2>💖 Em đồng ý làm người yêu anh chứ? 💖</h2>
+            <div class="proposal-buttons">
+                <button id="yesBtn">💕 Đồng ý! 💕</button>
+                <button id="noBtn">💔 Không... 💔</button>
+            </div>
+            <div class="feedback-section">
+                <label for="feedback">✍️ Cảm nhận của em (tùy chọn):</label>
+                <textarea id="feedback" rows="4" placeholder="Viết cảm nhận của em vào đây... 💭"></textarea>
+            </div>
+        </div>
+
+        <div id="messageContainer" class="hidden">
+            <p id="responseMessage"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

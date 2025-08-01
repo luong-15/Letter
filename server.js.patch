@@ -1,0 +1,63 @@
+const { choice, feedback } = req.body
+  const timestamp = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+
+  if (!choice) {
+    return res.status(400).send("Lựa chọn không hợp lệ.")
+  }
+
+  // Log to console for local development
+  console.log("\n🎉 NEW RESPONSE RECEIVED:")
+  console.log("⏰ Time:", timestamp)
+  console.log("💝 Choice:", choice === "yes" ? "✅ ĐỒNG Ý!" : "❌ Không...")
+  console.log("💭 Feedback:", feedback || "Không có phản hồi")
+  console.log("─".repeat(50))
+
+  try {
+    // Try to save to Google Sheets if configured
+    if (sheets && SPREADSHEET_ID) {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: "result_cr!A:C",
+        valueInputOption: "USER_ENTERED",
+        resource: {
+          values: [[timestamp, choice, feedback || ""]],
+        },
+      })
+      console.log("✅ Response saved to Google Sheets")
+    }
+=======
+app.post("/submit-response", async (req, res) => {
+  const { choice, feedback } = req.body
+  const timestamp = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+
+  if (!choice) {
+    return res.status(400).send("Lựa chọn không hợp lệ.")
+  }
+
+  // Extract IP address
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip || "Unknown IP"
+  // Extract User-Agent (device info)
+  const userAgent = req.headers['user-agent'] || "Unknown Device"
+
+  // Log to console for local development
+  console.log("\n🎉 NEW RESPONSE RECEIVED:")
+  console.log("⏰ Time:", timestamp)
+  console.log("💝 Choice:", choice === "yes" ? "✅ ĐỒNG Ý!" : "❌ Không...")
+  console.log("💭 Feedback:", feedback || "Không có phản hồi")
+  console.log("🌐 IP Address:", ip)
+  console.log("📱 Device Info:", userAgent)
+  console.log("─".repeat(50))
+
+  try {
+    // Try to save to Google Sheets if configured
+    if (sheets && SPREADSHEET_ID) {
+      await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: "result_cr!A:E",
+        valueInputOption: "USER_ENTERED",
+        resource: {
+          values: [[timestamp, choice, feedback || "", ip, userAgent]],
+        },
+      })
+      console.log("✅ Response saved to Google Sheets")
+    }

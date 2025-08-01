@@ -1,0 +1,560 @@
+/* Thiết lập lại CSS cơ bản */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Kiểu dáng cho Body */
+body {
+  font-family: "Open Sans", sans-serif; /* Sử dụng font Open Sans */
+  color: #444; /* Màu chữ mặc định tối hơn để dễ đọc */
+  overflow-x: hidden; /* Ngăn chặn cuộn ngang */
+  background: linear-gradient(-45deg, #ffdde1, #ee9ca7, #ffdde1, #ee9ca7); /* Gradient màu hồng nhạt */
+  background-size: 400% 400%; /* Kích thước nền cho hiệu ứng chuyển động */
+  animation: gradientShift 15s ease infinite; /* Hoạt ảnh chuyển đổi gradient */
+  position: relative;
+  min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao màn hình */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Hoạt ảnh chuyển đổi gradient nền */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Hoạt ảnh trái tim bay */
+.hearts {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Không chặn các sự kiện chuột */
+  z-index: 0; /* Đặt dưới các nội dung khác */
+}
+
+.heart {
+  position: absolute;
+  color: rgba(255, 182, 193, 0.7); /* Màu hồng nhạt cho trái tim */
+  font-size: 20px;
+  animation: float 6s infinite linear; /* Hoạt ảnh bay lên */
+  text-shadow: 0 0 5px rgba(255, 182, 193, 0.5); /* Hiệu ứng đổ bóng cho trái tim */
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Ẩn video nền nếu không sử dụng */
+.video-background,
+#myVideo {
+  display: none;
+}
+
+/* Container chính của nội dung */
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Đảm bảo chiếm toàn bộ chiều cao màn hình */
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  width: 100%; /* Đảm bảo chiếm toàn bộ chiều rộng */
+}
+
+/* Hiệu ứng chuyển đổi mượt mà cho các phần */
+.section {
+  opacity: 0;
+  transform: translateY(30px) scale(0.98);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* Thời gian và kiểu chuyển đổi */
+  width: 100%; /* Đảm bảo các phần chiếm toàn bộ chiều rộng */
+  display: flex; /* Sử dụng flexbox để căn giữa nội dung */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.section.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.section.fade-out {
+  opacity: 0;
+  transform: translateY(-30px) scale(0.98);
+}
+
+/* Kiểu dáng cho tiêu đề h1, h2 */
+h1,
+h2 {
+  font-family: "Dancing Script", cursive; /* Font chữ viết tay */
+  font-size: 3.8em; /* Kích thước lớn hơn */
+  margin-bottom: 35px;
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ hơn */
+  color: #f8685b; /* Màu cam-hồng sáng hơn */
+  letter-spacing: 2px;
+  animation: textGlow 2s ease-in-out infinite alternate; /* Hoạt ảnh phát sáng */
+  line-height: 1.2;
+}
+
+/* Hoạt ảnh phát sáng cho chữ */
+@keyframes textGlow {
+  from {
+    filter: drop-shadow(0 0 6px rgba(255, 107, 157, 0.4)); /* Hiệu ứng phát sáng nhẹ hơn */
+  }
+  to {
+    filter: drop-shadow(0 0 15px rgba(255, 107, 157, 0.7));
+  }
+}
+
+/* Avatar ban đầu */
+#initialAvatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 35px rgba(255, 107, 157, 0.7);
+  margin-bottom: 40px;
+  animation: avatarPulse 2s ease-in-out infinite;
+  transition: all 0.4s ease;
+}
+
+/* Hoạt ảnh nhịp đập cho avatar */
+@keyframes avatarPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+#initialAvatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 50px rgba(255, 107, 157, 0.9);
+}
+
+/* Kiểu dáng nút */
+button {
+  padding: 20px 45px;
+  font-size: 1.5em;
+  cursor: pointer;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #ff6b9d 0%, #ff8a80 100%); /* Gradient màu hồng */
+  color: white;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 12px 35px rgba(255, 107, 157, 0.5);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  position: relative;
+  overflow: hidden;
+  outline: none; /* Loại bỏ viền focus mặc định */
+  /* backdrop-filter: none; */ /* Đảm bảo không có độ mờ */
+}
+
+/* Hiệu ứng đổ bóng khi hover cho nút */
+button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease-in-out;
+}
+
+button:hover::before {
+  left: 100%;
+}
+
+button:hover {
+  transform: translateY(-7px) scale(1.07);
+  box-shadow: 0 18px 45px rgba(255, 107, 157, 0.7);
+  background: linear-gradient(135deg, #e91e63 0%, #ff5722 100%); /* Gradient màu đậm hơn khi hover */
+}
+
+button:active {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+}
+
+/* Container cho lá thư */
+#letterContainer {
+  max-width: 900px;
+  background: rgba(255, 255, 255, 0.98); /* Nền gần như trắng */
+  backdrop-filter: blur(25px); /* Hiệu ứng làm mờ nền */
+  color: #333;
+  padding: 50px 70px;
+  border-radius: 35px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+  text-align: left;
+  line-height: 1.8; /* Khoảng cách dòng vừa phải */
+  font-size: 1.15em; /* Kích thước chữ phù hợp hơn */
+  white-space: pre-wrap; /* Giữ định dạng xuống dòng */
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+  max-height: 90vh;
+  border: 3px solid rgba(255, 182, 193, 0.6); /* Viền hồng nhẹ */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  -ms-overflow-style: none; /* Ẩn thanh cuộn cho IE/Edge */
+  scrollbar-width: none; /* Ẩn thanh cuộn cho Firefox */
+}
+
+/* Ẩn thanh cuộn cho Webkit (Chrome, Safari) */
+#letterContainer::-webkit-scrollbar {
+  display: none;
+}
+
+/* Avatar trong lá thư */
+#letterAvatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid #ff6b9d;
+  box-shadow: 0 0 25px rgba(255, 107, 157, 0.6);
+  margin-bottom: 30px;
+  animation: avatarFloat 3s ease-in-out infinite;
+}
+
+/* Hoạt ảnh nổi cho avatar */
+@keyframes avatarFloat {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+#letterContainer p {
+  margin: 0;
+  color: #333; /* Màu chữ tối hơn để dễ đọc */
+  font-family: "Merriweather", serif; /* Font chữ dễ đọc */
+  text-align: justify;
+  text-indent: 2em; /* Thụt lề đầu dòng vừa phải */
+  position: relative;
+  margin-bottom: 1em; /* Khoảng cách giữa các đoạn */
+}
+
+/* Hiệu ứng con trỏ gõ */
+.typing-cursor::after {
+  content: "|";
+  animation: blink 1s infinite;
+  color: #ff6b9d;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Nút đề xuất */
+.proposal-buttons {
+  margin-top: 55px;
+  display: flex;
+  gap: 45px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+#yesBtn {
+  background: linear-gradient(135deg, #76b379 0%, #6fb632 100%); /* Gradient màu xanh lá đậm hơn */
+  animation: yesButtonPulse 2s ease-in-out infinite;
+}
+
+/* Hoạt ảnh nhịp đập cho nút Đồng ý */
+@keyframes yesButtonPulse {
+  0%,
+  100% {
+    box-shadow: 0 12px 35px rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    box-shadow: 0 18px 45px rgba(76, 175, 80, 0.7);
+  }
+}
+
+#yesBtn:hover {
+  background: linear-gradient(135deg, #45a049 0%, #7cb342 100%);
+  animation: none;
+}
+
+#noBtn {
+  background: linear-gradient(135deg, #ff8d8d 0%, #ff6e46 100%); 
+}
+
+#noBtn:hover {
+  background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Hoạt ảnh rung lắc cho nút Không */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
+}
+
+/* Phần phản hồi */
+.feedback-section {
+  margin-top: 55px;
+  width: 100%;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.feedback-section label {
+  display: block;
+  margin-bottom: 22px;
+  font-size: 1.4em;
+  color: #ff8a80;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 700;
+}
+
+textarea#feedback {
+  width: 100%;
+  padding: 22px;
+  border-radius: 25px;
+  border: 2px solid #ff6b9d;
+  box-sizing: border-box;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.25em;
+  resize: vertical;
+  min-height: 130px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  color: #333;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 25px rgba(255, 107, 157, 0.4);
+  transition: all 0.3s ease;
+}
+
+textarea#feedback:focus {
+  outline: none;
+  border-color: #e91e63;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 35px rgba(255, 107, 157, 0.7);
+  transform: scale(1.01);
+}
+
+textarea#feedback::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* Container thông báo */
+#messageContainer {
+  max-width: 750px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(25px);
+  color: #333;
+  padding: 55px;
+  border-radius: 35px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  font-size: 2.2em;
+  font-weight: bold;
+  text-align: center;
+  border: 3px solid rgba(255, 182, 193, 0.6);
+  line-height: 1.5;
+}
+
+.success {
+  color: #4caf50;
+  animation: successPulse 1s ease-in-out;
+}
+
+.error {
+  color: #f44336;
+  animation: errorShake 0.5s ease-in-out;
+}
+
+/* Hoạt ảnh nhịp đập cho thông báo thành công */
+@keyframes successPulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Hoạt ảnh rung lắc cho thông báo lỗi */
+@keyframes errorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-12px);
+  }
+  75% {
+    transform: translateX(12px);
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Thiết kế đáp ứng (Responsive Design) */
+@media (max-width: 768px) {
+  h1,
+  h2 {
+    font-size: 3em;
+    margin-bottom: 30px;
+  }
+
+  button {
+    padding: 16px 35px;
+    font-size: 1.3em;
+  }
+
+  #initialAvatar {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 35px;
+  }
+
+  #letterAvatar {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 25px;
+  }
+
+  #letterContainer,
+  #messageContainer {
+    padding: 35px 45px;
+    font-size: 1.25em;
+    max-height: 85vh;
+    border-radius: 28px;
+  }
+
+  .proposal-buttons {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .feedback-section label {
+    font-size: 1.3em;
+  }
+
+  textarea#feedback {
+    min-height: 110px;
+    padding: 19px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1,
+  h2 {
+    font-size: 2.5em;
+    margin-bottom: 25px;
+  }
+
+  button {
+    width: 95%;
+    padding: 14px 30px;
+    font-size: 1.2em;
+  }
+
+  #initialAvatar {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 30px;
+  }
+
+  #letterAvatar {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 20px;
+  }
+
+  #letterContainer,
+  #messageContainer {
+    padding: 30px 35px;
+    font-size: 1.15em;
+    border-radius: 25px;
+    margin: 15px;
+  }
+
+  .feedback-section label {
+    font-size: 1.2em;
+  }
+
+  textarea#feedback {
+    min-height: 90px;
+    padding: 16px;
+  }
+}
+
+/* Hoạt ảnh tải */
+.loading {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

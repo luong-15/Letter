@@ -103,7 +103,7 @@ Người yêu em.
   })
 
   async function sendResponse(choice) {
-    const feedback = feedbackTextarea.value
+    const feedback = feedbackTextarea.value.trim()
     const clickedBtn = choice === "yes" ? yesBtn : noBtn
 
     // Add loading state
@@ -111,35 +111,62 @@ Người yêu em.
     clickedBtn.innerHTML = '<span class="loading"></span> Đang gửi...'
     clickedBtn.disabled = true
 
+    // Disable both buttons to prevent double-clicking
+    yesBtn.disabled = true
+    noBtn.disabled = true
+
     try {
+      console.log('Sending response:', { choice, feedback })
+      
       const response = await fetch("/submit-response", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "text/plain"
         },
-        body: JSON.stringify({ choice, feedback }),
+        body: JSON.stringify({ 
+          choice: choice, 
+          feedback: feedback || null 
+        }),
       })
 
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const result = await response.text()
+      console.log('Response text:', result)
 
       smoothTransition(proposalContainer, messageContainer, () => {
         responseMessage.textContent = result
-        responseMessage.className = response.ok ? "success" : "error"
+        responseMessage.className = "success"
 
         // Add confetti effect for yes response
-        if (choice === "yes" && response.ok) {
+        if (choice === "yes") {
           createConfetti()
         }
       })
+
     } catch (error) {
       console.error("Error sending data:", error)
+      
       smoothTransition(proposalContainer, messageContainer, () => {
-        responseMessage.textContent = "Có lỗi xảy ra khi gửi phản hồi. Vui lòng thử lại."
-        responseMessage.className = "error"
+        if (choice === "yes") {
+          responseMessage.textContent = "🎉 Anh đã nhận được phản hồi của em rồi! Anh rất hạnh phúc! 💕"
+          responseMessage.className = "success"
+          createConfetti()
+        } else {
+          responseMessage.textContent = "😔 Anh đã nhận được phản hồi của em. Cảm ơn em đã thành thật! 💙"
+          responseMessage.className = "success"
+        }
       })
     } finally {
+      // Reset buttons
       clickedBtn.innerHTML = originalText
-      clickedBtn.disabled = false
+      yesBtn.disabled = false
+      noBtn.disabled = false
     }
   }
 
@@ -182,13 +209,13 @@ Người yêu em.
   // Add confetti animation to CSS
   const style = document.createElement("style")
   style.textContent = `
-        @keyframes confettiFall {
-            to {
-                transform: translateY(100vh) rotate(720deg);
-                opacity: 0;
-            }
-        }
-    `
+    @keyframes confettiFall {
+      to {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  `
   document.head.appendChild(style)
 
   yesBtn.addEventListener("click", () => {
@@ -207,30 +234,15 @@ Người yêu em.
   // Add hover effects for buttons
   ;[yesBtn, noBtn, revealLetterBtn].forEach((btn) => {
     btn.addEventListener("mouseenter", () => {
-      btn.style.transform = "translateY(-3px) scale(1.05)"
+      if (!btn.disabled) {
+        btn.style.transform = "translateY(-3px) scale(1.05)"
+      }
     })
 
     btn.addEventListener("mouseleave", () => {
-      btn.style.transform = ""
+      if (!btn.disabled) {
+        btn.style.transform = ""
+      }
     })
   })
-
-  // Override typeWriter function to prevent multiple calls
-  const originalTypeWriter = typeWriter
-  typeWriter = () => {
-    if (i < letterContent.length && isTyping) {
-      loveLetterText.innerHTML += letterContent.charAt(i)
-      loveLetterText.classList.add("typing-cursor")
-
-      i++
-      letterContainer.scrollTop = letterContainer.scrollHeight
-      setTimeout(typeWriter, 50)
-    } else if (isTyping) {
-      loveLetterText.classList.remove("typing-cursor")
-      console.log("Typing finished. Transitioning to proposal in 3 seconds.")
-      setTimeout(() => {
-        smoothTransition(letterContainer, proposalContainer)
-      }, 3000)
-    }
-  }
 })

@@ -9,11 +9,15 @@ const app = express()
 const port = process.env.PORT || 3000
 
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin: true,
+  credentials: true
+}))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
-/* Removed static file serving to let Vercel serve public folder automatically */
-// app.use(express.static(path.join(__dirname, "public")))
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, "public")))
 
 // Google Sheets setup
 let sheets
@@ -21,8 +25,9 @@ let SPREADSHEET_ID
 
 try {
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON && process.env.SPREADSHEET_ID) {
+    const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
     const auth = new google.auth.GoogleAuth({
-      credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON),
+      credentials: credentials,
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     })
 
@@ -43,60 +48,71 @@ app.get("/", (req, res) => {
 })
 
 app.post("/submit-response", async (req, res) => {
-  const { choice, feedback } = req.body
-  const timestamp = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
-
-  if (!choice) {
-    return res.status(400).send("Lựa chọn không hợp lệ.")
-  }
-
-  // Extract IP address
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip || "Unknown IP"
-  // Extract User-Agent (device info)
-  const userAgent = req.headers['user-agent'] || "Unknown Device"
-
-  // Log to console for local development
-  console.log("\n🎉 NEW RESPONSE RECEIVED:")
-  console.log("⏰ Time:", timestamp)
-  console.log("💝 Choice:", choice === "yes" ? "✅ ĐỒNG Ý!" : "❌ Không...")
-  console.log("💭 Feedback:", feedback || "Không có phản hồi")
-  console.log("🌐 IP Address:", ip)
-  console.log("📱 Device Info:", userAgent)
-  console.log("─".repeat(50))
-
   try {
+    const { choice, feedback } = req.body
+    const timestamp = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+
+    if (!choice) {
+      return res.status(400).json({ error: "Lựa chọn không hợp lệ." })
+    }
+
+    // Extract IP address with better handling for Vercel
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || 
+              req.headers['x-real-ip'] || 
+              req.connection.remoteAddress || 
+              req.socket.remoteAddress ||
+              req.ip || 
+              "Unknown IP"
+    
+    // Extract User-Agent (device info)
+    const userAgent = req.headers['user-agent'] || "Unknown Device"
+
+    // Log to console for debugging
+    console.log("\n🎉 NEW RESPONSE RECEIVED:")
+    console.log("⏰ Time:", timestamp)
+    console.log("💝 Choice:", choice === "yes" ? "✅ ĐỒNG Ý!" : "❌ Không...")
+    console.log("💭 Feedback:", feedback || "Không có phản hồi")
+    console.log("🌐 IP Address:", ip)
+    console.log("📱 Device Info:", userAgent.substring(0, 100) + "...")
+    console.log("─".repeat(50))
+
     // Try to save to Google Sheets if configured
     if (sheets && SPREADSHEET_ID) {
-      await sheets.spreadsheets.values.append({
-        spreadsheetId: SPREADSHEET_ID,
-        range: "result_cr!A:E",
-        valueInputOption: "USER_ENTERED",
-        resource: {
-          values: [[timestamp, choice, feedback || "", ip, userAgent]],
-        },
-      })
-      console.log("✅ Response saved to Google Sheets")
+      try {
+        await sheets.spreadsheets.values.append({
+          spreadsheetId: SPREADSHEET_ID,
+          range: "result_cr!A:E",
+          valueInputOption: "USER_ENTERED",
+          resource: {
+            values: [[timestamp, choice, feedback || "", ip, userAgent]],
+          },
+        })
+        console.log("✅ Response saved to Google Sheets")
+      } catch (sheetsError) {
+        console.error("❌ Google Sheets error:", sheetsError.message)
+        // Continue execution even if sheets fails
+      }
     }
 
+    // Prepare response message
     let responseMessage = ""
     if (choice === "yes") {
       responseMessage = "🎉 Niceeeeee! Anh hạnh phúc quá! Cảm ơn em rất nhiều! 🥰💕"
     } else if (choice === "no") {
       responseMessage = "😔 Anh hiểu rồi. Tuy hơi buồn nhưng anh vẫn trân trọng cảm nhận của em. 💙"
+    } else {
+      responseMessage = "Cảm ơn em đã phản hồi! 💖"
     }
 
+    // Send successful response
     res.status(200).send(responseMessage)
+
   } catch (error) {
-    console.error("❌ Error saving response:", error.message)
-
-    let responseMessage = ""
-    if (choice === "yes") {
-      responseMessage = "🎉 Niceeeeee! Anh hạnh phúc quá! Cảm ơn em rất nhiều! 🥰💕"
-    } else if (choice === "no") {
-      responseMessage = "😔 Anh hiểu rồi. Tuy hơi buồn nhưng anh vẫn trân trọng cảm nhận của em. 💙"
-    }
-
-    res.status(200).send(responseMessage)
+    console.error("❌ Error processing response:", error.message)
+    console.error("Stack trace:", error.stack)
+    
+    // Send error response
+    res.status(500).send("Có lỗi xảy ra. Anh vẫn nhận được phản hồi của em rồi! 💕")
   }
 })
 
@@ -106,12 +122,22 @@ app.get("/health", (req, res) => {
     status: "OK",
     timestamp: new Date().toISOString(),
     googleSheets: !!(sheets && SPREADSHEET_ID),
+    environment: process.env.NODE_ENV || 'development'
   })
 })
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, "public", "index.html"))
+// API status endpoint
+app.get("/api/status", (req, res) => {
+  res.json({
+    status: "running",
+    timestamp: new Date().toISOString(),
+    googleSheets: !!(sheets && SPREADSHEET_ID)
+  })
+})
+
+// Handle all other routes by serving index.html (SPA support)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"))
 })
 
 // Error handler
@@ -120,12 +146,17 @@ app.use((error, req, res, next) => {
   res.status(500).send("Có lỗi xảy ra trên server. Vui lòng thử lại sau.")
 })
 
-app.listen(port, () => {
-  console.log("\n🚀 Love Confession Website is running!")
-  console.log(`📍 Local: http://localhost:${port}`)
-  console.log(`🌐 Network: http://192.168.1.x:${port}`)
-  console.log("💕 Ready to receive love confessions!\n")
-})
+// Export for Vercel
+module.exports = app
+
+// Only listen if not in serverless environment
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log("\n🚀 Love Confession Website is running!")
+    console.log(`📍 Local: http://localhost:${port}`)
+    console.log("💕 Ready to receive love confessions!\n")
+  })
+}
 
 // Graceful shutdown
 process.on("SIGTERM", () => {

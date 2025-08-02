@@ -22,6 +22,11 @@
     {
       "src": "/health",
       "dest": "/server.js",
+      "methods": ["GET"]  
+    },
+    {
+      "src": "/debug/sheets",
+      "dest": "/server.js",
       "methods": ["GET"]
     },
     {
@@ -45,5 +50,8 @@
       "src": "/(.*)",
       "dest": "/public/index.html"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

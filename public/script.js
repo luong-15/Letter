@@ -82,7 +82,7 @@ Người yêu em.
       setTimeout(typeWriter, 50)
     } else if (isTyping) {
       loveLetterText.classList.remove("typing-cursor")
-      console.log("Typing finished. Transitioning to proposal in 3 seconds.")
+      console.log("Typing finished. Transitioning to proposal in 6 seconds.")
       setTimeout(() => {
         smoothTransition(letterContainer, proposalContainer)
       }, 6000)

@@ -5,46 +5,30 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "maxDuration": 30,
-        "memory": 1024
+        "maxDuration": 30
       }
     }
   ],
   "routes": [
     {
       "src": "/submit-response",
-      "dest": "/server.js",
-      "methods": ["POST"]
-    },
-    {
-      "src": "/health",
-      "dest": "/server.js",
-      "methods": ["GET"]  
-    },
-    {
-      "src": "/debug/sheets",
-      "dest": "/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/api/status",
-      "dest": "/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|html))",
       "dest": "/server.js"
     },
     {
-      "src": "/",
+      "src": "/health",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/debug/sheets",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/api/status",
       "dest": "/server.js"
     },
     {
       "src": "/(.*)",
       "dest": "/server.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

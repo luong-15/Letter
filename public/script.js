@@ -85,7 +85,7 @@ Người yêu em.
       console.log("Typing finished. Transitioning to proposal in 3 seconds.")
       setTimeout(() => {
         smoothTransition(letterContainer, proposalContainer)
-      }, 3000)
+      }, 6000)
     }
   }
 

@@ -19,29 +19,26 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, "public")))
 
-// Google Sheets setup with better error handling
-let sheets
-let SPREADSHEET_ID
+// Google Sheets setup - optimized for serverless
 let googleAuth
-let googleSheetsReady = false
+let SPREADSHEET_ID = process.env.SPREADSHEET_ID
 
-// Initialize Google Sheets - make it synchronous for Vercel
-function initializeGoogleSheets() {
+// Initialize Google Auth for each request (serverless-friendly)
+function createGoogleAuth() {
   try {
     if (!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || !process.env.SPREADSHEET_ID) {
       console.log("⚠️  Google Sheets not configured. Missing environment variables.")
-      return false
+      return null
     }
 
-    console.log("🔑 Initializing Google Sheets...")
+    console.log("🔑 Creating Google Auth...")
     
-    // Parse credentials with better error handling
     let credentials
     try {
       credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
     } catch (parseError) {
       console.error("❌ Error parsing Google credentials JSON:", parseError.message)
-      return false
+      return null
     }
 
     // Validate required fields in credentials
@@ -49,41 +46,34 @@ function initializeGoogleSheets() {
     for (const field of requiredFields) {
       if (!credentials[field]) {
         console.error(`❌ Missing required field in credentials: ${field}`)
-        return false
+        return null
       }
     }
 
     // Create auth instance
-    googleAuth = new google.auth.GoogleAuth({
+    const auth = new google.auth.GoogleAuth({
       credentials: credentials,
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     })
 
-    SPREADSHEET_ID = process.env.SPREADSHEET_ID
-    console.log("✅ Google Sheets configuration ready")
-    return true
+    console.log("✅ Google Auth created successfully")
+    return auth
 
   } catch (error) {
-    console.error("❌ Google Sheets initialization error:", error.message)
-    return false
+    console.error("❌ Google Auth creation error:", error.message)
+    return null
   }
 }
 
-// Initialize Google Sheets on startup
-googleSheetsReady = initializeGoogleSheets()
-
 // Helper function to get authenticated sheets client
 async function getSheetsClient() {
-  if (!googleSheetsReady || !googleAuth) {
+  const auth = createGoogleAuth()
+  if (!auth) {
     throw new Error("Google Sheets not configured")
   }
   
-  if (!sheets) {
-    const authClient = await googleAuth.getClient()
-    sheets = google.sheets({ version: "v4", auth: authClient })
-  }
-  
-  return sheets
+  const authClient = await auth.getClient()
+  return google.sheets({ version: "v4", auth: authClient })
 }
 
 // Routes
@@ -103,11 +93,12 @@ app.post("/submit-response", async (req, res) => {
       return res.status(400).send("Lựa chọn không hợp lệ.")
     }
 
-    // Extract request info
-    const ip = req.headers['x-forwarded-for']?.split(',')[0] || 
+    // Extract request info - improved for Vercel
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
               req.headers['x-real-ip'] || 
-              req.connection.remoteAddress || 
-              req.socket.remoteAddress ||
+              req.headers['cf-connecting-ip'] || // Cloudflare
+              req.connection?.remoteAddress || 
+              req.socket?.remoteAddress ||
               req.ip || 
               "Unknown IP"
     
@@ -122,11 +113,11 @@ app.post("/submit-response", async (req, res) => {
 
     // Try to save to Google Sheets
     let sheetsSuccess = false
-    if (googleSheetsReady && SPREADSHEET_ID) {
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON && SPREADSHEET_ID) {
       try {
         console.log("📊 Attempting to save to Google Sheets...")
         
-        // Get authenticated client
+        // Get authenticated client for this request
         const sheetsClient = await getSheetsClient()
         
         const values = [
@@ -135,36 +126,37 @@ app.post("/submit-response", async (req, res) => {
         
         console.log("📝 Data to append:", JSON.stringify(values))
         
-        // Try primary sheet first
-        let appendRequest = {
-          spreadsheetId: SPREADSHEET_ID,
-          range: "result_cr!A:E",
-          valueInputOption: "USER_ENTERED",
-          insertDataOption: "INSERT_ROWS",
-          resource: {
-            values: values
+        // Try to append data with fallback sheet names
+        const sheetNames = ["result_cr", "Sheet1", "responses"]
+        let appendSuccess = false
+        
+        for (const sheetName of sheetNames) {
+          try {
+            const appendRequest = {
+              spreadsheetId: SPREADSHEET_ID,
+              range: `${sheetName}!A:E`,
+              valueInputOption: "USER_ENTERED",
+              insertDataOption: "INSERT_ROWS",
+              resource: {
+                values: values
+              }
+            }
+            
+            const response = await sheetsClient.spreadsheets.values.append(appendRequest)
+            console.log(`✅ Successfully saved to Google Sheets (${sheetName})`)
+            console.log(`📊 Updated range: ${response.data.updates.updatedRange}`)
+            console.log(`📈 Rows added: ${response.data.updates.updatedRows}`)
+            appendSuccess = true
+            sheetsSuccess = true
+            break
+          } catch (sheetError) {
+            console.log(`⚠️ Sheet '${sheetName}' not found, trying next...`)
+            continue
           }
         }
         
-        try {
-          const response = await sheetsClient.spreadsheets.values.append(appendRequest)
-          console.log("✅ Successfully saved to Google Sheets (result_cr)")
-          console.log(`📊 Updated range: ${response.data.updates.updatedRange}`)
-          console.log(`📈 Rows added: ${response.data.updates.updatedRows}`)
-          sheetsSuccess = true
-        } catch (rangeError) {
-          if (rangeError.message.includes("Unable to parse range") || rangeError.code === 400) {
-            console.log("🔄 Sheet 'result_cr' not found, trying Sheet1...")
-            
-            // Fallback to Sheet1
-            appendRequest.range = "Sheet1!A:E"
-            const fallbackResponse = await sheetsClient.spreadsheets.values.append(appendRequest)
-            console.log("✅ Successfully saved to Google Sheets (Sheet1)")
-            console.log(`📊 Updated range: ${fallbackResponse.data.updates.updatedRange}`)
-            sheetsSuccess = true
-          } else {
-            throw rangeError
-          }
+        if (!appendSuccess) {
+          throw new Error("No valid sheet found in the spreadsheet")
         }
         
       } catch (sheetsError) {
@@ -183,7 +175,7 @@ app.post("/submit-response", async (req, res) => {
         }
       }
     } else {
-      console.log("⚠️  Google Sheets not ready or not configured")
+      console.log("⚠️  Google Sheets not configured - missing credentials or spreadsheet ID")
     }
 
     // Prepare response message
@@ -221,13 +213,13 @@ app.post("/submit-response", async (req, res) => {
 app.get("/health", async (req, res) => {
   let sheetsStatus = "not configured"
   
-  if (googleSheetsReady && SPREADSHEET_ID) {
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON && SPREADSHEET_ID) {
     try {
       const sheetsClient = await getSheetsClient()
       const response = await sheetsClient.spreadsheets.get({
         spreadsheetId: SPREADSHEET_ID
       })
-      sheetsStatus = "connected"
+      sheetsStatus = `connected - ${response.data.properties.title}`
     } catch (error) {
       sheetsStatus = `error: ${error.message}`
     }
@@ -238,18 +230,18 @@ app.get("/health", async (req, res) => {
     timestamp: new Date().toISOString(),
     googleSheets: {
       configured: !!(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON && process.env.SPREADSHEET_ID),
-      ready: googleSheetsReady,
       spreadsheetId: SPREADSHEET_ID ? "configured" : "not configured",
       status: sheetsStatus
     },
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    platform: 'vercel'
   })
 })
 
 // Debug endpoint for checking Google Sheets connection
 app.get("/debug/sheets", async (req, res) => {
   try {
-    if (!googleSheetsReady) {
+    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || !SPREADSHEET_ID) {
       return res.json({
         status: "not ready",
         configured: !!(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON && process.env.SPREADSHEET_ID),
@@ -287,7 +279,8 @@ app.get("/api/status", (req, res) => {
   res.json({
     status: "running",
     timestamp: new Date().toISOString(),
-    googleSheets: googleSheetsReady
+    googleSheets: !!(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON && SPREADSHEET_ID),
+    platform: "vercel"
   })
 })
 
@@ -302,7 +295,7 @@ app.use((error, req, res, next) => {
   res.status(500).send("Có lỗi xảy ra trên server. Vui lòng thử lại sau.")
 })
 
-// Export for Vercel
+// Export for Vercel (serverless)
 module.exports = app
 
 // Only listen if not in serverless environment
@@ -311,7 +304,7 @@ if (require.main === module) {
     console.log("\n🚀 Love Confession Website is running!")
     console.log(`📍 Local: http://localhost:${port}`)
     console.log("💕 Ready to receive love confessions!")
-    console.log(`📊 Google Sheets: ${googleSheetsReady ? '✅ Ready' : '❌ Not configured'}`)
+    console.log(`📊 Google Sheets: ${!!(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON && SPREADSHEET_ID) ? '✅ Configured' : '❌ Not configured'}`)
     console.log()
   })
 }

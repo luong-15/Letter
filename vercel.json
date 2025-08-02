@@ -5,12 +5,9 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "maxDuration": 30
+        "maxDuration": 30,
+        "memory": 1024
       }
-    },
-    {
-      "src": "public/**/*",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -35,20 +32,16 @@
       "methods": ["GET"]
     },
     {
-      "src": "/public/(.*)",
-      "dest": "/public/$1"
-    },
-    {
       "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|html))",
-      "dest": "/public/$1"
+      "dest": "/server.js"
     },
     {
       "src": "/",
-      "dest": "/public/index.html"
+      "dest": "/server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/public/index.html"
+      "dest": "/server.js"
     }
   ],
   "env": {

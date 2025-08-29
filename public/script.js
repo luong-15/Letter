@@ -20,15 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
   messageContainer.classList.add("section", "hidden")
 
   const letterContent = `
-Gửi Phạm Thị Ngọc Linh,
+Gửi Linh,
 
-Anh đã suy nghĩ rất nhiều về những gì anh muốn nói với em. Từ khi chúng ta gặp nhau, cuộc sống của anh đã trở nên tươi đẹp hơn rất nhiều. Mỗi khoảnh khắc ở bên em đều là những kỷ niệm đáng giá mà anh sẽ mãi trân trọng.
+Anh đã suy nghĩ rất nhiều, không phải về những điều cần nói mà là về cách để em cảm nhận được tất cả những gì anh đang giữ trong lòng. Từ ngày gặp em, cuộc sống của anh bỗng có thêm thật nhiều màu sắc. Mỗi giây phút bên em đều là những ký ức anh trân quý, khắc sâu trong tâm trí.
 
-Em là một người đặc biệt, với nụ cười làm anh tan chảy, với ánh mắt khiến anh lạc lối, và với trái tim ấm áp luôn biết quan tâm đến người khác. Anh yêu cách em cười, yêu cách em nói và yêu cả những điều nhỏ nhặt nhất về em.
+Linh à, em đặc biệt lắm. Nụ cười của em khiến trái tim anh tan chảy, ánh mắt em làm anh lạc lối và sự ấm áp từ trái tim em đã chạm đến anh. Anh yêu cách em cười, cách em nói và cả những điều nhỏ nhặt nhất làm nên con người em.
 
-Anh biết rằng tình yêu là một hành trình dài và anh muốn được cùng em đi trên con đường đó. Anh muốn được cùng em chia sẻ mọi niềm vui, nỗi buồn và cùng nhau vượt qua mọi thử thách trong cuộc sống.
+Anh tin rằng tình yêu là một hành trình dài và anh muốn được đồng hành cùng em trên con đường ấy. Mình sẽ cùng nhau chia sẻ niềm vui, cùng vượt qua nỗi buồn, và nắm tay nhau đi qua mọi thử thách của cuộc sống.
 
-Giờ đây, anh đã sẵn sàng để trao trọn trái tim mình cho em.
+Bây giờ và mãi mãi về sau, anh muốn trao trọn trái tim mình cho em.
 
 Với tất cả tình yêu và sự chân thành,
 Người yêu em.
